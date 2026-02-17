@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NADRA Receipt Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@430..700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Helvetica, ;
+            background: #f2f2f2;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+            align-items: flex-start;
+        }
+
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            width: 320px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        form h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            margin: 6px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #0a7a33;
+        }
+
+        button {
+            padding: 10px;
+            background: #0a7a33;
+            color: #fff;
+            border: none;
+            width: 100%;
+            margin-top: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #085a26;
+        }
+
+        .btn-print {
+            background: #0066cc;
+        }
+
+        .btn-print:hover {
+            background: #0052a3;
+        }
+
+        .btn-download {
+            background: #cc6600;
+        }
+
+        .btn-download:hover {
+            background: #a35200;
+        }
+
+        .receipt {
+            width: 80mm;
+            max-width: 380px;
+            background: white;
+            padding: 12px 10px;
+
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .office {
+            font-size: 15px;
+            font-weight: bold;
+
+        }
+
+        .urdu {
+            font-family: 'Noto Nastaliq Urdu', serif;
+            direction: rtl;
+            font-size: 15px;
+            margin: 4px 0;
+            padding-bottom: 8px;
+        }
+
+        .doubleline {
+            border-top: 3px double #000;
+            margin: 6px 0;
+        }
+
+        .info {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+        }
+
+        .info td {
+            padding: 2px 0;
+            font-size: 12px;
+        }
+
+        .label {
+            width: 48%;
+            font-weight: bold;
+        }
+
+        .colon {
+            width: 4%;
+            text-align: center;
+        }
+
+        .value {
+            width: 48%;
+            text-align: left;
+        }
+
+        .barcode-container {
+            text-align: center;
+            margin-top: 8px;
+            padding-top: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .barcode-container svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .barcodeBox {
+            font-family: monospace;
+            text-align: center;
+            letter-spacing: 1px;
+            margin-top: 1px;
+            font-size: 12px;
+            word-break: break-all;
+            padding-bottom: 10px;
+        }
+
+        /* Header Section */
+        .receipt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 8px;
+
+
+        }
+
+        .nadra-logo {
+            flex: 0 0 auto;
+            min-width: 60px;
+            max-width: 80px;
+            width: auto;
+            height: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nadra-logo img {
+            width: 100%;
+            height: auto;
+            max-width: 80px;
+            object-fit: contain;
+        }
+
+        .receipt-title {
+            flex: 1 1 auto;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 60px;
+            text-transform: uppercase;
+            padding: 0 8px;
+            line-height: 1.2;
+            min-width: 0;
+        }
+
+        .esahulat-logo {
+            flex: 0 0 auto;
+            min-width: 45px;
+            max-width: 60px;
+            width: auto;
+            height: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .esahulat-logo img {
+            width: 100%;
+            height: auto;
+            max-width: 55px;
+            object-fit: contain;
+        }
+
+        /* Print Styles */
+        @media print {
+            @page {
+                size: 80mm auto;
+                margin: 0;
+                padding: 0;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+                width: 80mm;
+            }
+
+            .container {
+                max-width: 80mm;
+                margin: 0;
+                display: block;
+            }
+
+            form {
+                display: none !important;
+            }
+
+            .receipt {
+                display: block !important;
+                width: 80mm !important;
+                max-width: 80mm !important;
+                border: none;
+                box-shadow: none;
+                margin: 0;
+                padding: 12px 10px;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            .receipt-header,
+            .doubleline,
+            .info,
+            .barcode-container,
+            .barcodeBox {
+                page-break-inside: avoid;
+            }
+
+            .info tr {
+                page-break-inside: avoid;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            form {
+                width: 100%;
+            }
+
+            .receipt {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <form id="receiptForm" onsubmit="generate(); return false;">
+            <h3>Receipt Data</h3>
+            <div class="form-group">
+                <label for="office">Office:</label>
+                <select id="office" required>
+                    <option value="">Select Office</option>
+                    <option value="LAHORE HIGH COURT">Lahore High Court</option>
+                    <option value="COUNCIL BAR LAHORE">District Court</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="name">Name (Urdu):</label>
+                <input type="text" id="name" placeholder="Enter name in Urdu" required>
+            </div>
+            <div class="form-group">
+                <label for="cnic">CNIC:</label>
+                <input type="text" id="cnic" placeholder="33202-6199150-1" required>
+            </div>
+            <div class="form-group">
+                <label for="tracking">Tracking ID:</label>
+                <input type="text" id="tracking" placeholder="210002312312" required>
+            </div>
+            <div class="form-group">
+                <label for="date">Date:</label>
+                <input type="date" id="date" required>
+            </div>
+            <div class="form-group">
+                <label for="time">Time:</label>
+                <input type="time" id="time" required>
+            </div>
+            <div class="form-group">
+                <label for="charges">Service Charges:</label>
+                <input type="number" id="charges" placeholder="200" required>
+            </div>
+            <div class="form-group">
+                <label for="esahulat">eSahulat ID:</label>
+                <input type="text" id="esahulat" placeholder="30094" required>
+            </div>
+            <div class="form-group">
+                <label for="issue">Issue Date:</label>
+                <input type="date" id="issue" required>
+            </div>
+            <div class="form-group">
+                <label for="verificationStatus">Verification Status:</label>
+                <select id="verificationStatus" required>
+                    <option value="Verified">Verified</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Failed">Failed</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-generate">Generate Receipt</button>
+            <button type="button" class="btn-print" id="printBtn" onclick="printReceipt()" style="display:none;">Print /
+                Save PDF</button>
+            <button type="button" class="btn-download" id="downloadBtn" onclick="downloadPDF()"
+                style="display:none;">Download PDF</button>
+        </form>
+
+        <div id="receipt" class="receipt">
+            <div class="receipt-header">
+                <div class="nadra-logo">
+                    <img src="nadra-logo.jpeg" alt="NADRA Logo">
+                </div>
+                <div class="receipt-title">RECEIPT</div>
+                <div class="esahulat-logo">
+                    <img src="nadra-2.jpeg" alt="eSahulat Logo">
+                </div>
+            </div>
+            <div class="doubleline"></div>
+            <div class="center bold">Biometric Verification</div>
+            <div id="r_office" class="center office"></div>
+
+            <div id="r_name" class="urdu center">
+
+            </div>
+
+
+
+            <table class="info">
+                <tr>
+                    <td class="label">CNIC</td>
+                    <td class="colon">:</td>
+                    <td id="r_cnic" class="value"></td>
+                </tr>
+                <tr>
+                    <td class="label">Verification Status</td>
+                    <td class="colon">:</td>
+                    <td id="r_status" class="value"></td>
+                </tr>
+                <tr>
+                    <td class="label">Tracking Id</td>
+                    <td class="colon">:</td>
+                    <td id="r_tracking" class="value"></td>
+                </tr>
+                <tr>
+                    <td class="label">Date</td>
+                    <td class="colon">:</td>
+                    <td id="r_date" class="value"></td>
+                </tr>
+                <tr>
+                    <td class="label">Time</td>
+                    <td class="colon">:</td>
+                    <td id="r_time" class="value"></td>
+                </tr>
+                <tr>
+                    <td class="label">Service Charges</td>
+                    <td class="colon">:</td>
+                    <td id="r_charges" class="value"></td>
+                </tr>
+                <tr>
+                    <td class="label">eSahulat ID</td>
+                    <td class="colon">:</td>
+                    <td id="r_esahulat" class="value"></td>
+                </tr>
+                <tr>
+                    <td class="label">Issue Date</td>
+                    <td class="colon">:</td>
+                    <td id="r_issue" class="value"></td>
+                </tr>
+            </table>
+
+
+            <div id="barcodeContainer" class="barcode-container">
+                <svg id="barcode"></svg>
+            </div>
+            <div id="barcodeText" class="barcodeBox"></div>
+            <div class="doubleline"></div>
+            <div class="center">Help Line : 051-2772100</div>
+        </div>
+    </div>
+
+    <script>
+        // Set default date and time
+        document.addEventListener('DOMContentLoaded', function () {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+            document.getElementById('issue').value = today;
+
+            const now = new Date();
+            const timeString = now.toTimeString().slice(0, 5);
+            document.getElementById('time').value = timeString;
+        });
+
+        function setText(id, val) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = val || '';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}-${month}-${year}`;
+        }
+
+        function formatTime(timeString) {
+            if (!timeString) return '';
+            const [hours, minutes] = timeString.split(':');
+            const date = new Date();
+            date.setHours(parseInt(hours));
+            date.setMinutes(parseInt(minutes));
+            date.setSeconds(0);
+
+            const h = String(date.getHours()).padStart(2, '0');
+            const m = String(date.getMinutes()).padStart(2, '0');
+            const s = String(date.getSeconds()).padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
+        function formatDateForBarcode(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = String(date.getFullYear()).slice(-2);
+            return `${year}${month}${day}`;
+        }
+
+        function formatTimeForBarcode(timeString) {
+            if (!timeString) return '';
+            const [hours, minutes] = timeString.split(':');
+            return `${hours}${minutes}`;
+        }
+
+        function generate() {
+            const office = document.getElementById('office').value;
+            const name = document.getElementById('name').value;
+            const cnic = document.getElementById('cnic').value;
+            const tracking = document.getElementById('tracking').value;
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
+            const charges = document.getElementById('charges').value;
+            const esahulat = document.getElementById('esahulat').value;
+            const issue = document.getElementById('issue').value;
+            const verificationStatus = document.getElementById('verificationStatus').value;
+
+            // Set receipt values
+            setText('r_office', office);
+            setText('r_name', name);
+            setText('r_cnic', cnic);
+            setText('r_status', verificationStatus);
+            setText('r_tracking', tracking);
+            setText('r_date', formatDate(date));
+            setText('r_time', formatTime(time));
+            setText('r_charges', charges);
+            setText('r_esahulat', esahulat);
+            setText('r_issue', formatDate(issue));
+
+            // Generate barcode data
+            const barcodeData = `${esahulat}${formatDateForBarcode(date)}${formatTimeForBarcode(time)}${tracking}`;
+            setText('barcodeText', barcodeData);
+
+            // Generate barcode using JsBarcode
+            setTimeout(() => {
+                try {
+                    const barcodeElement = document.getElementById('barcode');
+                    if (barcodeElement) {
+                        // Clear previous barcode
+                        barcodeElement.innerHTML = '';
+                        JsBarcode("#barcode", barcodeData, {
+                            format: "CODE128",
+                            width: 1.5,
+                            height: 40,
+                            displayValue: false,
+                            margin: 0
+                        });
+                    }
+                } catch (error) {
+                    console.error("Barcode generation error:", error);
+                    // Fallback to text barcode
+                    setText('barcodeText', '| ' + barcodeData.split('').join(' | ') + ' |');
+                }
+            }, 100);
+
+            // Show receipt and buttons
+            document.getElementById('receipt').style.display = 'block';
+            document.getElementById('printBtn').style.display = 'inline-block';
+            document.getElementById('downloadBtn').style.display = 'inline-block';
+
+            // Scroll to receipt
+            document.getElementById('receipt').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function printReceipt() {
+            window.print();
+        }
+
+        function downloadPDF() {
+            const receipt = document.getElementById('receipt');
+            const opt = {
+                margin: 0,
+                filename: 'nadra-receipt.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: [80, 'auto'], orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(receipt).save();
+        }
+    </script>
+</body>
+
+</html>
